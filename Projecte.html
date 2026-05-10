@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Demand Signals — Inibsa</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <style>
+    :root {
+      --font-sans: system-ui, -apple-system, sans-serif;
+      --color-bg: #f8fafc;
+      --color-text-main: #1e293b;
+      --color-text-sub: #64748b;
+      --color-inibsa: #185fa5;
+      --border: #e2e8f0;
+    }
+    body { margin: 0; padding: 2rem; font-family: var(--font-sans); background: var(--color-bg); color: var(--color-text-main); }
+    
+    .container { max-width: 1400px; margin: 0 auto; }
+    .header { margin-bottom: 1.5rem; }
+    .header h1 { font-size: 1.25rem; font-weight: 700; color: var(--color-inibsa); display: flex; align-items: center; gap: 8px; }
+
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .search-box { padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px; width: 350px; outline: none; transition: border 0.2s; }
+    .search-box:focus { border-color: var(--color-inibsa); box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.1); }
+
+    /* Contenedor con scroll para tablas anchas */
+    .table-wrapper { background: white; border: 1px solid var(--border); border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    
+    table { width: 100%; border-collapse: collapse; min-width: 1300px; }
+    th { background: #f1f5f9; padding: 12px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--color-text-sub); border-bottom: 1px solid var(--border); text-align: left; }
+    td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    tr:hover td { background: #f8fafc; }
+
+    /* Badges y Estilos */
+    .risk { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .risk.alto { background: #fee2e2; color: #991b1b; }
+    .risk.medio { background: #fef3c7; color: #92400e; }
+    .risk.bajo { background: #dcfce7; color: #166534; }
+
+    .btag { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; background: #e2e8f0; color: #475569; }
+    .btag.c { background: #e0f2fe; color: #0369a1; } /* Commodity */
+
+    .phone { font-family: monospace; color: var(--color-inibsa); font-weight: 600; text-decoration: none; }
+    .contact-name { font-weight: 600; color: var(--color-text-main); }
+    .profile { font-size: 11px; color: var(--color-text-sub); font-style: italic; }
+
+    .actions { display: flex; gap: 8px; }
+    .btn { padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: white; cursor: pointer; color: var(--color-text-sub); }
+    .btn:hover { border-color: var(--color-inibsa); color: var(--color-inibsa); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1><i class="ti ti-database-search"></i> Smart Demand Signals — Inibsa</h1>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" id="a-search" class="search-box" placeholder="Buscar por clínica, provincia o contacto..." oninput="renderAlertas()">
+    <div id="a-cnt" style="font-size: 12px; color: var(--color-text-sub);"></div>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Clínica</th>
+          <th>Provincia</th>
+          <th>Familia</th>
+          <th>Perfil</th>
+          <th>Contacto</th>
+          <th>Teléfono</th>
+          <th>Tipo</th>
+          <th>Última Compra</th>
+          <th>Días</th>
+          <th>Facturación</th>
+          <th>Riesgo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="a-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const ALERTS = [
+  {
+    cliente: "Clínica Dental Sorriso", 
+    prov: "Madrid", 
+    familia: "Anestesia", 
+    perfil: "Odontólogo Senior", 
+    contacto: "Dr. Alberto Ruiz", 
+    tel: "+34 912 345 678",
+    tipo: "Commodity", 
+    ultima: "2025-03-24", 
+    dias: 46, 
+    fact: 1436, 
+    riesgo: "alto"
+  },
+  {
+    cliente: "Centro Dental Caredent", 
+    prov: "Barcelona", 
+    familia: "Regeneración", 
+    perfil: "Cirujano Maxilofacial", 
+    contacto: "Dra. Elena Costa", 
+    tel: "+34 934 567 890",
+    tipo: "Técnico", 
+    ultima: "2025-01-10", 
+    dias: 119, 
+    fact: 5400, 
+    riesgo: "medio"
+  },
+  {
+    cliente: "Clínica Oral Maestro", 
+    prov: "Sevilla", 
+    familia: "Agujas", 
+    perfil: "Gestor de Compras", 
+    contacto: "Carlos Mendoza", 
+    tel: "+34 954 123 456",
+    tipo: "Commodity", 
+    ultima: "2024-12-05", 
+    dias: 155, 
+    fact: 890, 
+    riesgo: "alto"
+  },
+  {
+    cliente: "Dental Clínic Ferrer", 
+    prov: "Valencia", 
+    familia: "Implantes", 
+    perfil: "Propietario / Implantólogo", 
+    contacto: "Dr. Marc Ferrer", 
+    tel: "+34 963 888 777",
+    tipo: "Técnico", 
+    ultima: "2025-04-15", 
+    dias: 24, 
+    fact: 12400, 
+    riesgo: "bajo"
+  },
+  {
+    cliente: "Clínica Dental Vitaldent", 
+    prov: "Bilbao", 
+    familia: "Anestesia", 
+    perfil: "Auxiliar de Clínica", 
+    contacto: "Sonia Garmendia", 
+    tel: "+34 944 222 333",
+    tipo: "Commodity", 
+    ultima: "2025-02-28", 
+    dias: 70, 
+    fact: 3100, 
+    riesgo: "medio"
+  }
+];
+
+function renderAlertas() {
+  const q = document.getElementById('a-search').value.toLowerCase();
+  const tb = document.getElementById('a-tbody');
+  
+  const filtered = ALERTS.filter(d => 
+    d.cliente.toLowerCase().includes(q) || 
+    d.prov.toLowerCase().includes(q) ||
+    d.contacto.toLowerCase().includes(q)
+  );
+
+  document.getElementById('a-cnt').textContent = `${filtered.length} alertas activas`;
+
+  tb.innerHTML = filtered.map(d => `
+    <tr>
+      <td style="font-weight: 600;">${d.cliente}</td>
+      <td>${d.prov}</td>
+      <td>${d.familia}</td>
+      <td><span class="profile">${d.perfil}</span></td>
+      <td><span class="contact-name">${d.contacto}</span></td>
+      <td><a href="tel:${d.tel}" class="phone">${d.tel}</a></td>
+      <td><span class="btag ${d.tipo === 'Commodity' ? 'c' : ''}">${d.tipo}</span></td>
+      <td>${d.ultima}</td>
+      <td style="font-weight: 700; color: ${d.dias > 90 ? '#b91c1c' : 'inherit'}">${d.dias} d</td>
+      <td style="font-family: monospace; font-weight: 600;">€${d.fact.toLocaleString()}</td>
+      <td><span class="risk ${d.riesgo}">${d.riesgo}</span></td>
+      <td class="actions">
+        <button class="btn" title="Ver Ficha"><i class="ti ti-user-search"></i></button>
+        <button class="btn" title="Registrar Llamada"><i class="ti ti-phone-call"></i></button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+renderAlertas();
+</script>
+
+</body>
+</html>
